@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: platform-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - vm
+
+  interface:
+    build:
+      context: ./interface
+      dockerfile: Dockerfile
+    container_name: platform-interface
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  vm:
+    build:
+      context: ./vm
+      dockerfile: Dockerfile
+    image: platform-vm:latest
+    container_name: platform-vm
+    ports:
+      - "5901:5901"
+    environment:
+      - DISPLAY=:1
+      - USER=vm
+      - SHELL=/bin/bash
+      - HOME=/home/vm
+      - XDG_RUNTIME_DIR=/tmp/runtime-vm
+
+networks:
+  default:
+    name: platform_default
